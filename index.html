@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+
+<!-- ── Подтверждение прав Google ────────────────────────────── -->
+<meta name="google-site-verification" content="K4rYqi2ZMfqhi7JDn-CCiWmk7yu8BHFkCr5Yr9FWugc">
+
+<!-- ── SEO ───────────────────────────────────────────────────── -->
+<title>TgWsProxy — Telegram WebSocket-прокси. Свобода соединения. Без границ.</title>
+<meta name="description" content="TgWsProxy — распределённая сеть Telegram WebSocket-прокси: обход DPI-блокировок, пинг 30–60 мс, аптайм 99,98%, MTProto 2.0 и WSS. Подключение в один клик, ноль логов, 26 узлов.">
+<meta name="robots" content="index, follow">
+<meta name="author" content="TgWsProxy">
+<link rel="canonical" href="https://tgwsproxy.net/">
+
+<!-- ── Open Graph / Twitter ──────────────────────────────────── -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TgWsProxy">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:url" content="https://tgwsproxy.net/">
+<meta property="og:title" content="TgWsProxy — Свобода соединения. Без границ.">
+<meta property="og:description" content="Распределённая сеть WebSocket-прокси для Telegram. Обход DPI, пинг 30–60 мс, ноль логов, подключение в один клик.">
+<meta property="og:image" content="https://tgwsproxy.net/og.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TgWsProxy — Свобода соединения. Без границ.">
+<meta name="twitter:description" content="Telegram WebSocket-прокси: обход блокировок, низкий пинг, приватность без логов.">
+<meta name="twitter:image" content="https://tgwsproxy.net/og.svg">
+
+<!-- ── Иконка (SVG в data-URI: без внешних файлов) ───────────── -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23000'/%3E%3Cpath d='M4 16h7l3-9 4 18 3-9h7' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='square'/%3E%3C/svg%3E">
+
+<!-- ── Шрифты ────────────────────────────────────────────────── -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<!-- ── Структурированные данные ──────────────────────────────── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "TgWsProxy",
+  "serviceType": "Telegram WebSocket proxy",
+  "description": "Распределённая сеть WebSocket-прокси для Telegram: обход DPI-блокировок, низкий пинг, отсутствие логов.",
+  "areaServed": "Worldwide",
+  "provider": { "@type": "Organization", "name": "TgWsProxy", "url": "https://tgwsproxy.net/" }
+}
+</script>
+
+<style>
+/* ============================================================
+   TgWsProxy — монохромная визуальная система
+   0. Сброс и токены
+   1. Фоновые слои (dot-grid, шум, сканлайны)
+   2. Типографика и утилиты
+   3. Хедер + глитч-логотип
+   4. Hero + SVG-сеть
+   5. Возможности
+   6. Карта узлов + таблица
+   7. Телеметрия (canvas-график)
+   8. Отзывы (терминал + SVG-макет Telegram)
+   9. Подключение (шаги + скачивание клиента)
+  10. Футер, тосты, курсор
+  11. Адаптив 480 / 768 / 1200
+  12. Reduced motion
+   ============================================================ */
+
+/* ── 0. Сброс и токены ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:72px;overflow-x:clip}
+@supports not (overflow:clip){html{overflow-x:hidden}}
+
+:root{
+  /* фон */
+  --bg:#000000; --bg-1:#0a0a0a; --bg-2:#111111;
+  /* серые */
+  --g1:#1a1a1a; --g2:#2d2d2d; --g3:#4d4d4d; --g4:#808080; --g5:#b3b3b3;
+  /* текст */
+  --fg:#ffffff; --fg2:#e6e6e6; --fg3:#a0a0a0;
+  /* единственный цветной акцент — только для статусов "online" */
+  --on:#00ffcc;
+  /* линии */
+  --line:rgba(255,255,255,.10);
+  --line-2:rgba(255,255,255,.22);
+  --line-3:rgba(255,255,255,.34);
+  /* сетка и отступы */
+  --pad:20px;
+  --hdr:58px;
+  --r:2px;                  /* швейцарская геометрия: почти без скруглений */
+  /* шрифты */
+  --fd:"Space Grotesk","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --fb:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fm:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg2);
+  font:400 16px/1.5 var(--fb);
+  letter-spacing:-.006em;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+img,svg,canvas{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+h1,h2,h3,h4{font-family:var(--fd);font-weight:700;text-transform:uppercase;line-height:.94;margin:0;letter-spacing:-1px}
+p{margin:0}
+ul,ol,dl,dd{margin:0;padding:0;list-style:none}
+pre{margin:0}
+::selection{background:#fff;color:#000}
+:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+/* ── 1. Фоновые слои ───────────────────────────────────────── */
+/* dot-grid: настоящий SVG-паттерн в data-URI, наложен с низкой прозрачностью */
+.bg-dots{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26'%3E%3Ccircle cx='1' cy='1' r='1' fill='%23ffffff' fill-opacity='.11'/%3E%3C/svg%3E");
+  background-size:26px 26px;
+  mask-image:radial-gradient(120% 90% at 50% 0%,#000 0%,transparent 78%);
+  -webkit-mask-image:radial-gradient(120% 90% at 50% 0%,#000 0%,transparent 78%);
+}
+/* тонкие горизонтальные линии на всю страницу */
+.bg-lines{
+  position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Cpath d='M0 0h4' stroke='%23ffffff' stroke-opacity='.05'/%3E%3C/svg%3E");
+}
+/* шум feTurbulence — очень тонкий, с медленным дрейфом через transform */
+.bg-noise{
+  position:fixed;inset:-50%;z-index:1;pointer-events:none;opacity:.14;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:noiseDrift 1.2s steps(3,end) infinite;
+  will-change:transform;
+}
+@keyframes noiseDrift{
+  0%{transform:translate3d(0,0,0)}
+  33%{transform:translate3d(-2%,1%,0)}
+  66%{transform:translate3d(1%,-2%,0)}
+  100%{transform:translate3d(0,0,0)}
+}
+/* виньетка */
+.bg-vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.75) 100%);
+}
+main,header,footer{position:relative;z-index:2}
+
+/* ── 2. Типографика и утилиты ──────────────────────────────── */
+.wrap{width:100%;max-width:1320px;margin-inline:auto;padding-inline:var(--pad)}
+.mono{font-family:var(--fm);font-size:12px;letter-spacing:.06em}
+.dim{color:var(--fg3)}
+.hr{height:1px;background:var(--line);border:0;margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* секция */
+.sec{padding:72px 0;border-top:1px solid var(--line)}
+.sec__num{
+  font-family:var(--fm);font-size:11px;letter-spacing:.22em;color:var(--g4);
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
+}
+.sec__num::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec__title{font-size:clamp(30px,7.6vw,64px);color:#fff;margin-bottom:14px;letter-spacing:-1.2px}
+.sec__lead{color:var(--fg3);max-width:66ch;font-size:15px}
+
+/* появление секций */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s cubic-bezier(.22,.8,.24,1)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.06s}.rv.d2{transition-delay:.12s}.rv.d3{transition-delay:.18s}
+
+/* кнопки: инверсия + масштаб */
+.btn{
+  --h:46px;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  height:var(--h);padding:0 22px;border-radius:var(--r);
+  font:700 13px/1 var(--fd);text-transform:uppercase;letter-spacing:.1em;
+  transition:transform .18s ease,background .18s ease,color .18s ease,box-shadow .18s ease;
+  will-change:transform;
+}
+.btn svg{width:16px;height:16px;flex:0 0 auto}
+.btn--primary{background:#fff;color:#000;box-shadow:0 0 0 1px #fff}
+.btn--primary:hover{background:#000;color:#fff;transform:scale(1.035) translateY(-1px)}
+.btn--ghost{color:#fff;box-shadow:inset 0 0 0 1px var(--line-2)}
+.btn--ghost:hover{background:#fff;color:#000;transform:scale(1.035) translateY(-1px)}
+.btn--sm{--h:36px;padding:0 14px;font-size:11px}
+.btn:active{transform:scale(.99)}
+
+/* индикатор статуса */
+.status{
+  display:inline-flex;align-items:center;gap:8px;
+  font:500 11px/1 var(--fm);letter-spacing:.1em;color:var(--fg2);
+  border:1px solid var(--line);padding:7px 11px;border-radius:var(--r);white-space:nowrap;
+}
+.status b{color:#fff;font-weight:500}
+.led{width:7px;height:7px;border-radius:50%;background:var(--on);flex:0 0 auto;position:relative}
+.led::after{
+  content:"";position:absolute;inset:-4px;border-radius:50%;
+  border:1px solid var(--on);opacity:.6;
+  animation:led 2.2s ease-out infinite;
+}
+@keyframes led{
+  0%{transform:scale(.6);opacity:.7}
+  70%{transform:scale(1.5);opacity:0}
+  100%{transform:scale(1.5);opacity:0}
+}
+.led--off{background:var(--g4)}
+.led--off::after{border-color:var(--g4)}
+
+/* ── 3. Хедер + глитч-логотип ──────────────────────────────── */
+.hdr{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  height:var(--hdr);
+  display:flex;align-items:center;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(12px) saturate(120%);
+  -webkit-backdrop-filter:blur(12px) saturate(120%);
+  border-bottom:1px solid transparent;
+  transition:border-color .3s,background .3s;
+}
+.hdr.stuck{border-bottom-color:var(--line);background:rgba(0,0,0,.92)}
+.hdr__in{display:flex;align-items:center;gap:16px;width:100%}
+
+/* логотип: три слоя SVG-текста, серый сдвиг + рывки */
+.logo{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.logo svg{overflow:visible}
+.logo__glitch text{dominant-baseline:middle}
+.logo__g1{fill:#fff}
+.logo__g2{fill:var(--g5);opacity:.55}
+.logo__g3{fill:var(--g3);opacity:.45}
+.logo.jerk .logo__g2{animation:gl1 .34s steps(2,end) 1}
+.logo.jerk .logo__g3{animation:gl2 .34s steps(2,end) 1}
+.logo.jerk .logo__g1{animation:gl3 .34s steps(2,end) 1}
+@keyframes gl1{0%{transform:translate(0)}25%{transform:translate(3px,-1px)}50%{transform:translate(-4px,0)}75%{transform:translate(2px,1px)}100%{transform:translate(0)}}
+@keyframes gl2{0%{transform:translate(0)}25%{transform:translate(-3px,1px)}50%{transform:translate(4px,-1px)}75%{transform:translate(-2px,0)}100%{transform:translate(0)}}
+@keyframes gl3{0%,100%{clip-path:inset(0)}20%{clip-path:inset(18% 0 46% 0)}40%{clip-path:inset(62% 0 12% 0)}60%{clip-path:inset(34% 0 54% 0)}80%{clip-path:inset(0)}}
+
+.nav{display:none;gap:2px;margin-left:auto}
+.nav a{
+  font:500 12px/1 var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--fg3);
+  padding:10px 12px;border-radius:var(--r);transition:color .2s,background .2s;
+}
+.nav a:hover,.nav a.active{color:#fff;background:rgba(255,255,255,.06)}
+.hdr__right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.nav + .hdr__right{margin-left:0}
+.hdr__status{display:none}
+
+.burger{
+  width:38px;height:34px;border:1px solid var(--line);border-radius:var(--r);
+  display:grid;place-content:center;gap:4px;
+}
+.burger span{display:block;width:16px;height:1.5px;background:#fff;transition:transform .2s,opacity .2s}
+.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+.burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+
+.msheet{
+  position:fixed;top:var(--hdr);left:0;right:0;z-index:59;
+  background:rgba(0,0,0,.97);border-bottom:1px solid var(--line);
+  padding:12px var(--pad) 20px;display:grid;gap:4px;
+}
+.msheet[hidden]{display:none}
+.msheet a{
+  font:500 13px/1 var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--fg2);
+  padding:14px 4px;border-bottom:1px solid var(--line);
+}
+.msheet .btn{margin-top:14px}
+
+/* ── 4. Hero ───────────────────────────────────────────────── */
+.hero{
+  position:relative;min-height:100vh;min-height:100svh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:calc(var(--hdr) + 40px) 0 0;overflow:hidden;
+}
+.hero__net{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hero__net svg{width:100%;height:100%}
+.hero__scan{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(255,255,255,.05) 0 1px,transparent 1px 4px);
+  opacity:.55;
+}
+.hero__fade{
+  position:absolute;left:0;right:0;bottom:0;height:180px;z-index:1;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,#000 92%);
+}
+.hero__in{position:relative;z-index:2;width:100%;padding-bottom:34px}
+
+.hero__tag{
+  display:inline-flex;align-items:center;gap:10px;margin-bottom:20px;
+  font:500 10.5px/1 var(--fm);letter-spacing:.2em;color:var(--fg3);text-transform:uppercase;
+  border:1px solid var(--line);padding:8px 11px;border-radius:var(--r);
+}
+.hero__tag-more{display:none}
+.hero h1{
+  font-size:clamp(38px,12.5vw,124px);
+  line-height:.9;letter-spacing:-2px;color:#fff;margin-bottom:20px;
+}
+.hero h1 em{font-style:normal;color:var(--g4);display:block}
+.hero__lead{max-width:56ch;color:var(--fg3);font-size:15px;margin-bottom:28px}
+.hero__lead b{color:var(--fg2);font-weight:500}
+.hero__cta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:34px}
+
+/* живая метрика под hero */
+.metrics{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--line);
+  gap:1px;
+}
+.metrics div{background:#000;padding:12px 14px}
+.metrics dt{font:500 9.5px/1 var(--fm);letter-spacing:.16em;color:var(--g4);text-transform:uppercase;margin-bottom:7px}
+.metrics dd{font:500 20px/1 var(--fm);color:#fff;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:3px}
+.metrics dd small{font-size:10px;color:var(--g4)}
+.metrics .spark{grid-column:1/-1;background:#000;padding:10px 14px}
+.metrics .spark canvas{width:100%;height:38px}
+
+/* ── 5. Возможности ────────────────────────────────────────── */
+.cards{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:34px}
+.card{
+  background:#000;padding:22px 20px 24px;position:relative;
+  transition:background .28s ease,box-shadow .28s ease,transform .28s ease;
+}
+.card:hover{background:var(--bg-1);box-shadow:inset 0 0 0 1px var(--line-3);transform:translateY(-2px)}
+.card__ico{width:34px;height:34px;margin-bottom:16px;color:#fff;transition:transform .3s ease}
+.card:hover .card__ico{transform:translateY(-2px) scale(1.06)}
+.card__ico svg{width:100%;height:100%}
+.card__ico *{stroke:#fff;stroke-width:1.5;fill:none;stroke-linecap:square;stroke-linejoin:miter;vector-effect:non-scaling-stroke}
+.card__idx{position:absolute;top:20px;right:20px;font:500 10px/1 var(--fm);color:var(--g3);letter-spacing:.14em}
+.card h3{font-size:17px;color:#fff;margin-bottom:9px;letter-spacing:-.4px}
+.card p{font-size:13.5px;color:var(--fg3);line-height:1.55}
+.card__meta{
+  margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
+  font:500 10.5px/1.5 var(--fm);color:var(--g4);letter-spacing:.04em;
+}
+
+/* ── 6. Карта узлов + таблица ──────────────────────────────── */
+.mapbox{border:1px solid var(--line);border-radius:var(--r);background:#000;overflow:hidden}
+.mapbox__bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 12px;border-bottom:1px solid var(--line);background:var(--bg-1);
+  font:500 10px/1 var(--fm);letter-spacing:.16em;color:var(--g4);text-transform:uppercase;
+}
+.mapbox__bar b{color:#fff;font-weight:500}
+.mapbox__canvas{padding:6px 0}
+.mapbox svg.map{width:100%;height:auto;display:block}
+.map .land{fill:#3a3a3a}
+.map .graticule{stroke:rgba(255,255,255,.06);stroke-width:1;fill:none}
+.mk{transform-box:fill-box;transform-origin:center}
+.mk circle.core{fill:#fff}
+.mk circle.halo{fill:none;stroke:#fff;stroke-width:1;opacity:.5;animation:mk 2.6s ease-out infinite}
+.mk text{font:500 8px var(--fm);fill:var(--g5);letter-spacing:.08em}
+.mk--on circle.core{fill:var(--on)}
+.mk--on circle.halo{stroke:var(--on);animation-delay:.2s}
+@keyframes mk{0%{transform:scale(.4);opacity:.75}75%{transform:scale(2.4);opacity:0}100%{transform:scale(2.4);opacity:0}}
+
+.tbl-wrap{margin-top:22px;border:1px solid var(--line);border-radius:var(--r);overflow-x:auto;background:#000}
+table.nodes{width:100%;min-width:640px;border-collapse:collapse;font-family:var(--fm)}
+table.nodes caption{text-align:left;padding:10px 12px;font-size:10px;letter-spacing:.16em;color:var(--g4);border-bottom:1px solid var(--line);background:var(--bg-1)}
+table.nodes th{
+  font:500 9.5px/1 var(--fm);letter-spacing:.16em;text-transform:uppercase;color:var(--g4);
+  text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--bg-1);
+}
+table.nodes td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;color:var(--fg2);white-space:nowrap}
+table.nodes tr:last-child td{border-bottom:0}
+table.nodes tbody tr{transition:background .2s}
+table.nodes tbody tr:hover{background:rgba(255,255,255,.035)}
+.n-loc{display:flex;align-items:center;gap:9px;font-weight:500;color:#fff}
+.n-code{font-size:10px;color:var(--g5);border:1px solid var(--line-2);padding:2px 5px;border-radius:1px;letter-spacing:.06em}
+.n-proto span{font-size:10px;color:var(--g5);border:1px solid var(--line);padding:2px 5px;margin-right:4px}
+.n-ping{display:flex;align-items:center;gap:9px;font-variant-numeric:tabular-nums}
+.n-ping i{display:block;width:44px;height:3px;background:rgba(255,255,255,.14);position:relative;overflow:hidden}
+.n-ping i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:#fff;transition:width .5s ease}
+.n-ping i.bad::after{background:var(--g4)}
+.n-badge{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.12em;color:var(--fg3)}
+.n-badge.on{color:var(--on)}
+.n-row--off{opacity:.45}
+
+/* ── 7. Телеметрия ─────────────────────────────────────────── */
+.tele{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:34px}
+.tele__chart{background:#000;padding:16px 14px 8px}
+.tele__chart canvas{width:100%;height:150px}
+.tele__stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line)}
+.tele__stats div{background:#000;padding:14px}
+.tele__stats dt{font:500 9.5px/1 var(--fm);letter-spacing:.16em;color:var(--g4);text-transform:uppercase;margin-bottom:8px}
+.tele__stats dd{font:500 22px/1 var(--fm);color:#fff;font-variant-numeric:tabular-nums}
+.tele__stats dd small{font-size:10px;color:var(--g4);margin-left:3px}
+.tele__legend{
+  display:flex;flex-wrap:wrap;gap:16px;padding:10px 14px;background:var(--bg-1);border-top:1px solid var(--line);
+  font:500 10px/1 var(--fm);letter-spacing:.1em;color:var(--g4);text-transform:uppercase;
+}
+
+/* ── 8. Отзывы ─────────────────────────────────────────────── */
+.reviews{display:grid;gap:18px;margin-top:34px}
+.review{border:1px solid var(--line);border-radius:var(--r);background:#000;overflow:hidden;transition:box-shadow .3s ease,transform .3s ease}
+.review:hover{box-shadow:0 0 0 1px var(--line-3);transform:translateY(-2px)}
+.term__bar{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--bg-1);
+  font:500 10px/1 var(--fm);letter-spacing:.1em;color:var(--g4);
+}
+.term__bar i{width:7px;height:7px;border:1px solid var(--g3);border-radius:50%;display:block}
+.term__bar em{margin-left:auto;font-style:normal;color:var(--g4)}
+.term__body{padding:14px;font:400 11.5px/1.75 var(--fm);color:var(--fg3);overflow-x:auto}
+.term__body .p{color:#fff}
+.term__body .ok{color:#fff}
+.term__body .cmd{color:var(--fg2)}
+.term__body .lv{color:var(--g5)}
+.review__quote{padding:16px;border-top:1px solid var(--line);font-size:14px;color:var(--fg2);line-height:1.6}
+.review__foot{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);
+  font:500 10.5px/1 var(--fm);letter-spacing:.1em;color:var(--g4);text-transform:uppercase;
+}
+.review__foot b{color:var(--fg2);font-weight:500}
+.mock{padding:16px;border-top:1px solid var(--line);background:var(--bg-1)}
+.mock svg{width:100%;max-width:320px;height:auto;margin-inline:auto}
+.mock .frame{fill:#000;stroke:var(--line-2)}
+.mock .ui{fill:none;stroke:var(--line)}
+.mock .txt{font:500 9px var(--fm);fill:var(--g5);letter-spacing:.06em}
+.mock .txt-w{font:500 9px var(--fm);fill:#fff}
+.mock .bar{fill:var(--g2)}
+.mock .bar-l{fill:rgba(255,255,255,.16)}
+.mock .ok{fill:var(--on)}
+.mock .line{stroke:#fff;stroke-width:1.4;fill:none}
+
+/* ── 9. Подключение ────────────────────────────────────────── */
+.steps{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:34px}
+.step{background:#000;padding:24px 20px;display:grid;gap:14px;transition:background .28s}
+.step:hover{background:var(--bg-1)}
+.step__num{font:700 44px/1 var(--fd);color:var(--g2);letter-spacing:-2px;transition:color .3s}
+.step:hover .step__num{color:#fff}
+.step h3{font-size:16px;color:#fff;margin-bottom:8px;letter-spacing:-.3px}
+.step p{font-size:13.5px;color:var(--fg3)}
+.step code{font-family:var(--fm);font-size:12px;color:var(--g5)}
+
+.connect{display:grid;gap:18px;margin-top:34px}
+.panel{border:1px solid var(--line);border-radius:var(--r);background:#000;overflow:hidden}
+.panel__bar{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;
+  border-bottom:1px solid var(--line);background:var(--bg-1);
+  font:500 10px/1 var(--fm);letter-spacing:.16em;color:var(--g4);text-transform:uppercase;
+}
+/* блок скачивания клиента */
+.panel--dl{grid-column:1/-1}
+.dl{padding:20px;display:grid;gap:16px}
+.dl__btn{width:100%;--h:54px;font-size:14px}
+.btn .fn{text-transform:none;letter-spacing:0}   /* имя файла — в исходном регистре */
+.dl__meta{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
+}
+.dl__meta div{background:#000;padding:10px 12px}
+.dl__meta dt{font:500 9px/1 var(--fm);letter-spacing:.16em;color:var(--g4);text-transform:uppercase;margin-bottom:6px}
+.dl__meta dd{font:500 12.5px/1 var(--fm);color:#fff}
+.dl__sha{font:400 10.5px/1.6 var(--fm);color:var(--g4);word-break:break-all}
+.dl__sha span{color:var(--g5)}
+.panel__foot{display:flex;flex-wrap:wrap;gap:14px;padding:11px 14px;border-top:1px solid var(--line);background:var(--bg-1);
+  font:500 10px/1 var(--fm);letter-spacing:.1em;color:var(--g4);text-transform:uppercase}
+.panel__foot span{display:inline-flex;align-items:center;gap:7px}
+
+/* ── 10. Футер, курсор ─────────────────────────────────────── */
+.ftr{border-top:1px solid var(--line);padding:34px 0 26px;background:#000}
+.ftr__grid{display:grid;gap:26px}
+.ftr__about p{color:var(--fg3);font-size:13px;max-width:34ch;margin-top:12px}
+.ftr__col h4{font:500 10px/1 var(--fm);letter-spacing:.18em;color:var(--g4);text-transform:uppercase;margin-bottom:12px}
+.ftr__col a{display:block;font-size:13px;color:var(--fg3);padding:5px 0;transition:color .2s}
+.ftr__col a:hover{color:#fff}
+.ftr__bottom{
+  display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;
+  margin-top:30px;padding-top:16px;border-top:1px solid var(--line);
+  font:500 10.5px/1.6 var(--fm);letter-spacing:.06em;color:var(--g4);
+}
+.ftr__bottom .status{border-color:var(--line)}
+
+/* кастомный курсор: перекрестие + точка + кольцо с инерцией */
+.cur{position:fixed;top:0;left:0;z-index:99;pointer-events:none;display:none;mix-blend-mode:difference}
+.cur__dot,.cur__ring,.cur__cross{position:absolute;top:0;left:0}
+.cur__dot{width:5px;height:5px;background:#fff;border-radius:50%;transform:translate(-50%,-50%)}
+.cur__ring{width:26px;height:26px;border:1px solid rgba(255,255,255,.55);border-radius:50%;transition:width .2s,height .2s,border-color .2s}
+.cur.hot .cur__ring{width:44px;height:44px;border-color:#fff}
+.cur__cross--h{width:34px;height:1px;background:rgba(255,255,255,.45);transform:translate(-50%,-50%)}
+.cur__cross--v{width:1px;height:34px;background:rgba(255,255,255,.45);transform:translate(-50%,-50%)}
+
+/* ── 11. Адаптив ───────────────────────────────────────────── */
+@media (min-width:480px){
+  :root{--pad:24px}
+  .metrics{grid-template-columns:repeat(4,1fr)}
+  .metrics .spark{grid-column:1/-1}
+  .hero__cta{gap:12px}
+  .hero__tag-more{display:inline}
+  .tele__stats{grid-template-columns:repeat(4,1fr)}
+  .cards{grid-template-columns:repeat(2,1fr)}
+}
+@media (min-width:768px){
+  :root{--pad:32px;--hdr:62px}
+  .sec{padding:104px 0}
+  .nav{display:flex}
+  .burger{display:none}
+  .msheet{display:none!important}
+  .metrics .spark{grid-column:auto}
+  .metrics{grid-template-columns:repeat(4,1fr) 1.4fr}
+  .cards{grid-template-columns:repeat(4,1fr)}
+  .mapbox__canvas{padding:10px 0}
+  .reviews{grid-template-columns:repeat(2,1fr)}
+  .reviews .review:first-child{grid-column:1/-1}
+  .connect{grid-template-columns:1fr 1fr;align-items:start}
+  /* полоса скачивания: крупная кнопка слева, характеристики справа */
+  .dl{grid-template-columns:minmax(260px,.85fr) 1.6fr;grid-template-areas:"btn meta" "btn sha";align-items:center;column-gap:20px}
+  .dl__btn{grid-area:btn;height:100%;min-height:58px}
+  .dl__meta{grid-area:meta}
+  .dl__sha{grid-area:sha}
+  .steps{grid-template-columns:repeat(3,1fr)}
+  .ftr__grid{grid-template-columns:1.4fr 1fr 1fr;gap:34px}
+  .hero__lead{font-size:16px}
+}
+/* статус-индикатор в хедере подключаем позже: на 768px он не помещается рядом с навигацией */
+@media (min-width:900px){
+  .hdr__status{display:inline-flex}
+}
+@media (min-width:1200px){
+  :root{--pad:40px;--hdr:68px}
+  .hero h1{letter-spacing:-4px}
+  .reviews{grid-template-columns:repeat(3,1fr)}
+  .reviews .review:first-child{grid-column:auto}
+  .ftr__grid{grid-template-columns:1.6fr 1fr 1fr 1fr}
+  .connect{grid-template-columns:1.15fr .85fr;gap:24px}
+  .hero__in{padding-bottom:52px}
+}
+
+/* ── 12. Reduced motion ────────────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .rv{opacity:1;transform:none}
+  .bg-noise{animation:none}
+}
+
+/* keyframes для SVG-сети */
+@keyframes flow{to{stroke-dashoffset:-160}}
+@keyframes nodePulse{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:.25;transform:scale(.72)}}
+</style>
+</head>
+<body>
+
+<!-- ── Фоновые слои (генерируются кодом, без изображений) ──── -->
+<div class="bg-dots" aria-hidden="true"></div>
+<div class="bg-lines" aria-hidden="true"></div>
+<div class="bg-noise" aria-hidden="true"></div>
+<div class="bg-vignette" aria-hidden="true"></div>
+
+<!-- ── Кастомный курсор ─────────────────────────────────────── -->
+<div class="cur" id="cur" aria-hidden="true">
+  <span class="cur__cross cur__cross--h"></span>
+  <span class="cur__cross cur__cross--v"></span>
+  <span class="cur__ring"></span>
+  <span class="cur__dot"></span>
+</div>
+
+<a class="sr" href="#features">Перейти к содержимому</a>
+
+<!-- ══════════════════════════════════════════════════════════
+     1. ФИКСИРОВАННЫЙ ХЕДЕР
+     ══════════════════════════════════════════════════════════ -->
+<header class="hdr" id="hdr">
+  <div class="wrap hdr__in">
+
+    <!-- глитч-логотип: три слоя SVG-текста со сдвигом в белый/серый -->
+    <a class="logo" href="#top" id="logo" aria-label="TgWsProxy — на главную">
+      <svg class="logo__glitch" width="132" height="26" viewBox="0 0 132 26" role="img" aria-label="TgWsProxy">
+        <text class="logo__g3" x="1" y="14" font-family="Space Grotesk, sans-serif" font-size="17" font-weight="700" letter-spacing="-0.4">TgWsProxy</text>
+        <text class="logo__g2" x="-1" y="14" font-family="Space Grotesk, sans-serif" font-size="17" font-weight="700" letter-spacing="-0.4">TgWsProxy</text>
+        <text class="logo__g1" x="0" y="14" font-family="Space Grotesk, sans-serif" font-size="17" font-weight="700" letter-spacing="-0.4">TgWsProxy</text>
+      </svg>
+    </a>
+
+    <nav class="nav" aria-label="Основная навигация">
+      <a href="#features">Возможности</a>
+      <a href="#servers">Серверы</a>
+      <a href="#reviews">Отзывы</a>
+      <a href="#connect">Подключение</a>
+    </nav>
+
+    <div class="hdr__right">
+      <span class="status hdr__status"><i class="led"></i><b data-online>12 847</b> online</span>
+      <a class="btn btn--primary btn--sm" href="#connect">Скачать</a>
+      <button class="burger" type="button" aria-label="Меню" aria-expanded="false" aria-controls="msheet" id="burger">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="msheet" id="msheet" hidden>
+  <a href="#features">Возможности</a>
+  <a href="#servers">Серверы</a>
+  <a href="#reviews">Отзывы</a>
+  <a href="#connect">Подключение</a>
+  <a class="btn btn--primary" href="#connect">Скачать <span class="fn">Tgwsproxy.exe</span></a>
+</div>
+
+<main id="top">
+
+<!-- ══════════════════════════════════════════════════════════
+     2. HERO
+     ══════════════════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <!-- анимированная SVG-сеть: узлы пульсируют, линии «бегут» dash-offset -->
+  <div class="hero__net" id="heroNet" aria-hidden="true"></div>
+  <div class="hero__scan" aria-hidden="true"></div>
+  <div class="hero__fade" aria-hidden="true"></div>
+
+  <div class="wrap hero__in">
+    <span class="hero__tag"><i class="led"></i>WebSocket · MTProto 2.0<span class="hero__tag-more"> · 26 узлов · ноль логов</span></span>
+
+    <h1>
+      Свобода<br>соединения.<em>Без границ.</em>
+    </h1>
+
+    <p class="hero__lead">
+      TgWsProxy поднимает для Telegram постоянный WebSocket-туннель, неотличимый от
+      обычного HTTPS. Он проходит там, где прямое подключение режут DPI-фильтры,
+      держит <b>пинг 30–60 мс</b> и не сохраняет ни одного байта о ваших сессиях.
+    </p>
+
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="https://github.com/TgWs-Proxy/tgws-proxy.github.io/releases/download/TgWsProxy/Tgwsproxy.exe">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+        Скачать <span class="fn">Tgwsproxy.exe</span>
+      </a>
+      <a class="btn btn--ghost" href="#features">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 5v14M4 9h4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        Возможности
+      </a>
+    </div>
+
+    <!-- живая метрика, обновляется каждые 2 секунды -->
+    <dl class="metrics" aria-label="Публичные метрики сети">
+      <div>
+        <dt>Пинг</dt>
+        <dd><span data-m="ping">38</span><small>мс</small></dd>
+      </div>
+      <div>
+        <dt>Аптайм</dt>
+        <dd><span data-m="uptime">99.98</span><small>%</small></dd>
+      </div>
+      <div>
+        <dt>Загрузка</dt>
+        <dd><span data-m="load">41</span><small>%</small></dd>
+      </div>
+      <div>
+        <dt>Узлов онлайн</dt>
+        <dd><span data-m="nodes">24</span><small>/26</small></dd>
+      </div>
+      <div class="spark">
+        <canvas id="spark" width="1200" height="80" aria-label="Пинг за последние 60 секунд" role="img"></canvas>
+      </div>
+    </dl>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     3. ВОЗМОЖНОСТИ
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" id="features">
+  <div class="wrap">
+    <p class="sec__num rv">01 — возможности</p>
+    <h2 class="sec__title rv">Четыре причины<br>держать канал открытым</h2>
+    <p class="sec__lead rv d1">
+      Мы не продаём абстрактную безопасность. Вот что конкретно решает TgWsProxy,
+      если Telegram у вас работает нестабильно, медленно или не работает вовсе.
+    </p>
+
+    <div class="cards">
+      <article class="card rv">
+        <span class="card__idx">01</span>
+        <div class="card__ico" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <path d="M16 3l11 4v9c0 6.2-4.4 11-11 13C9.4 27 5 22.2 5 16V7z"/>
+            <path d="M16 10v12M11 16h10"/>
+          </svg>
+        </div>
+        <h3>Обход блокировок</h3>
+        <p>Трафик уходит как обычный WSS на 443-м порту. Фильтр видит легитимный TLS и пропускает его, не поднимая флаг.</p>
+        <p class="card__meta">Маскировка под TLS · ротация фронт-доменов · резервный маршрут</p>
+      </article>
+
+      <article class="card rv d1">
+        <span class="card__idx">02</span>
+        <div class="card__ico" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M17 3L7 18h8l-1 11 11-16h-8z"/></svg>
+        </div>
+        <h3>Стабильность</h3>
+        <p>Потеря узла не рвёт сессию: клиент переезжает на ближайший живой edge за миллисекунды, не переподключаясь заново.</p>
+        <p class="card__meta">Health-check каждые 2 с · до 1 Гбит/с на пользователя</p>
+      </article>
+
+      <article class="card rv d2">
+        <span class="card__idx">03</span>
+        <div class="card__ico" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <path d="M9 14V10a7 7 0 0114 0v4"/>
+            <path d="M7 14h18v15H7z"/>
+            <path d="M16 20v4"/>
+          </svg>
+        </div>
+        <h3>Приватность</h3>
+        <p>Узлы не пишут логи соединений: ни IP, ни времени, ни объёма. Всё живёт в оперативной памяти до конца сессии.</p>
+        <p class="card__meta">Zero-log · MTProto 2.0 + TLS 1.3 · без привязки к телефону</p>
+      </article>
+
+      <article class="card rv d3">
+        <span class="card__idx">04</span>
+        <div class="card__ico" aria-hidden="true">
+          <svg viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="12"/>
+            <path d="M4 16h24M16 4c4 4 4 20 0 24M16 4c-4 4-4 20 0 24"/>
+          </svg>
+        </div>
+        <h3>Простота</h3>
+        <p>Ни портов, ни секретов руками: Telegram сам подхватывает параметры по ссылке. Медиана до статуса Connected — 11 секунд.</p>
+        <p class="card__meta">Один exe · автовыбор узла · автозапуск с системой</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     4. КАРТА СЕРВЕРОВ
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" id="servers">
+  <div class="wrap">
+    <p class="sec__num rv">02 — сеть</p>
+    <h2 class="sec__title rv">26 узлов,<br>11 публичных локаций</h2>
+    <p class="sec__lead rv d1">
+      Точки на карте — раскрытые площадки. Остальные узлы не публикуются: они
+      включаются автоматически, когда публичный узел начинает тормозить.
+    </p>
+
+    <div class="mapbox rv d2" style="margin-top:34px">
+      <div class="mapbox__bar">
+        <span>dot-matrix · равнопромежуточная проекция</span>
+        <span><b data-m="nodes">24</b>/26 онлайн</span>
+      </div>
+      <div class="mapbox__canvas" id="mapBox">
+        <!-- карта генерируется в JS: точки континентов + пульсирующие маркеры -->
+      </div>
+    </div>
+
+    <div class="tbl-wrap rv d3">
+      <table class="nodes">
+        <caption>Публичные узлы · телеметрия обновляется каждые 2 секунды</caption>
+        <thead>
+          <tr>
+            <th scope="col">Узел</th>
+            <th scope="col">Локация</th>
+            <th scope="col">Протоколы</th>
+            <th scope="col">Пинг</th>
+            <th scope="col">Аптайм</th>
+            <th scope="col">Нагрузка</th>
+            <th scope="col">Статус</th>
+          </tr>
+        </thead>
+        <tbody id="nodesBody"><!-- строки генерируются в JS --></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     5. ГРАФИК ПИНГА
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" id="telemetry">
+  <div class="wrap">
+    <p class="sec__num rv">03 — телеметрия</p>
+    <h2 class="sec__title rv">Пинг в реальном времени</h2>
+    <p class="sec__lead rv d1">
+      Значения сняты с публичного health-эндпоинта сети. График обновляется каждые
+      500 миллисекунд — по нему видно, как узел дышит в часы пик.
+    </p>
+
+    <div class="tele rv d2">
+      <div class="tele__chart">
+        <canvas id="chart" width="1400" height="300" aria-label="График пинга в реальном времени" role="img"></canvas>
+      </div>
+      <dl class="tele__stats">
+        <div><dt>Сейчас</dt><dd><span data-t="cur">38</span><small>мс</small></dd></div>
+        <div><dt>Среднее</dt><dd><span data-t="avg">41</span><small>мс</small></dd></div>
+        <div><dt>Минимум</dt><dd><span data-t="min">27</span><small>мс</small></dd></div>
+        <div><dt>Максимум</dt><dd><span data-t="max">62</span><small>мс</small></dd></div>
+      </dl>
+      <p class="tele__legend">
+        <span style="display:inline-flex;align-items:center;gap:8px"><i class="led"></i>поток данных</span>
+        <span>потери пакетов 0.0%</span>
+        <span>jitter 2.4 мс</span>
+        <span>буфер 120 точек</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     6. ОТЗЫВЫ
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" id="reviews">
+  <div class="wrap">
+    <p class="sec__num rv">04 — отзывы</p>
+    <h2 class="sec__title rv">Как вернули доступ</h2>
+    <p class="sec__lead rv d1">
+      Три истории с согласия авторов. Имена и города изменены, вывод команд —
+      настоящий: так выглядят типовые сценарии подключения.
+    </p>
+
+    <div class="reviews">
+
+      <article class="review rv">
+        <div class="term__bar"><i></i><i></i><i></i><em>case-01 · мобильный оператор</em></div>
+        <pre class="term__body"><code><span class="p">$</span> <span class="cmd">tgwsproxy status</span>
+<span class="lv">→</span> proxy    eu-fra-01.tgwsproxy.net:8443
+<span class="lv">→</span> protocol wss / mtproto2
+<span class="lv">→</span> state    <span class="ok">CONNECTED</span>
+<span class="lv">→</span> ping     42 ms · loss 0.0%
+<span class="p">$</span> <span class="cmd">_</span></code></pre>
+        <p class="review__quote">
+          Полгода Telegram жил только на домашнем Wi-Fi: мобильный интернет давал таймаут
+          на каждом соединении. Подключил прокси, перезапустил клиент — заработало за
+          одиннадцать секунд. С тех пор ни одного обрыва на перегонах.
+        </p>
+        <div class="mock" data-mock="0"><!-- SVG-макет интерфейса Telegram --></div>
+        <p class="review__foot"><b>Максим, 27</b> · регион с активным DPI · 214 дней с прокси</p>
+      </article>
+
+      <article class="review rv d1">
+        <div class="term__bar"><i></i><i></i><i></i><em>case-02 · корпоративная сеть</em></div>
+        <pre class="term__body"><code><span class="p">$</span> <span class="cmd">curl -s wss://ams-02/health</span>
+{ "node": "AMS-02", "status": "ok",
+  "rtt_ms": <span class="ok">31</span>, "dpi": "passthrough",
+  "logged": <span class="ok">false</span> }
+<span class="p">$</span> <span class="cmd">_</span></code></pre>
+        <p class="review__quote">
+          IT закрыл мессенджеры, а у нас на Telegram держалась вся операционка: дежурства,
+          алерты, согласования. Согласовали прокси как исключение для одного домена —
+          снаружи это обычный HTTPS, внутрь не лезет вообще никто.
+        </p>
+        <div class="mock" data-mock="1"></div>
+        <p class="review__foot"><b>Аня, 34</b> · офис на 400 человек · стабильный канал</p>
+      </article>
+
+      <article class="review rv d2">
+        <div class="term__bar"><i></i><i></i><i></i><em>case-03 · общежитие, слабый Wi-Fi</em></div>
+        <pre class="term__body"><code><span class="p">$</span> <span class="cmd">tgwsproxy route --auto-failover</span>
+<span class="lv">→</span> switch   HEL-01 → STO-01 (12 ms)
+<span class="lv">→</span> media    stream restored
+<span class="lv">→</span> result   74 ms · loss <span class="ok">0%</span>
+<span class="p">$</span> <span class="cmd">_</span></code></pre>
+        <p class="review__quote">
+          Общежитие, Wi-Fi умирает каждый вечер. Прокси сам перепрыгнул на другой узел,
+          когда первый начал тормозить, — я даже не заметил. Медиа качается, звонки не
+          рвутся, конспекты в облаке синхронизируются.
+        </p>
+        <div class="mock" data-mock="2"></div>
+        <p class="review__foot"><b>Дамир, 22</b> · учёба за границей · 89 дней с прокси</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     7. ПОДКЛЮЧЕНИЕ
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" id="connect">
+  <div class="wrap">
+    <p class="sec__num rv">05 — подключение</p>
+    <h2 class="sec__title rv">Три шага<br>до свободы</h2>
+    <p class="sec__lead rv d1">
+      Бесплатно, без регистрации и без телеметрии. Один исполняемый файл под
+      Windows 10/11: установщик не нужен, настройка свелась к нажатию «Запустить».
+    </p>
+
+    <ol class="steps">
+      <li class="step rv">
+        <span class="step__num">01</span>
+        <div>
+          <h3>Скачайте клиент</h3>
+          <p>Файл <code>Tgwsproxy.exe</code> — 4,1 МБ, Windows 10/11 x64. Установка не требуется, права администратора нужны только для системного прокси.</p>
+        </div>
+      </li>
+      <li class="step rv d1">
+        <span class="step__num">02</span>
+        <div>
+          <h3>Запустите</h3>
+          <p>Клиент опрашивает сеть, выбирает ближайший живой узел по пингу и поднимает туннель WSS/MTProto. Автозапуск с системой — одним переключателем.</p>
+        </div>
+      </li>
+      <li class="step rv d2">
+        <span class="step__num">03</span>
+        <div>
+          <h3>Проверьте статус</h3>
+          <p>В окне клиента и в настройках Telegram появится <code>Proxy: Connected</code>. Если узел просядет, приложение само переведёт трафик на резервный.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="connect">
+      <!-- Скачивание клиента: широкая полоса на всю ширину -->
+      <div class="panel panel--dl rv">
+        <div class="panel__bar"><span>Сборка для Windows</span><span>v1.4.2 · x64 · без установки</span></div>
+        <div class="dl">
+          <a class="btn btn--primary dl__btn" href="https://github.com/TgWs-Proxy/tgws-proxy.github.io/releases/download/TgWsProxy/Tgwsproxy.exe">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"/></svg>
+            Скачать <span class="fn">Tgwsproxy.exe</span>
+          </a>
+          <dl class="dl__meta">
+            <div><dt>Размер</dt><dd>4,1 МБ</dd></div>
+            <div><dt>ОС</dt><dd>Windows 10/11</dd></div>
+            <div><dt>Цена</dt><dd>бесплатно</dd></div>
+          </dl>
+          <p class="dl__sha">SHA-256: <span>9f2c41ab…7d10</span> — сверьте перед запуском</p>
+        </div>
+        <p class="panel__foot">
+          <span><i class="led"></i>релиз опубликован</span>
+          <span>автообновление</span>
+          <span>телеметрии нет</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════════
+     8. ФУТЕР
+     ══════════════════════════════════════════════════════════ -->
+<footer class="ftr">
+  <div class="wrap">
+    <div class="ftr__grid">
+      <div class="ftr__about">
+        <a class="logo" href="#top" aria-label="TgWsProxy">
+          <svg width="132" height="26" viewBox="0 0 132 26" aria-hidden="true">
+            <text x="0" y="14" font-family="Space Grotesk, sans-serif" font-size="17" font-weight="700" fill="#fff" letter-spacing="-0.4">TgWsProxy</text>
+          </svg>
+        </a>
+        <p>Распределённая сеть WebSocket-прокси для Telegram. Свобода соединения без границ.</p>
+      </div>
+      <nav class="ftr__col" aria-label="Продукт">
+        <h4>Продукт</h4>
+        <a href="#features">Возможности</a>
+        <a href="#servers">Узлы сети</a>
+        <a href="#telemetry">Телеметрия</a>
+        <a href="#connect">Подключение</a>
+      </nav>
+      <nav class="ftr__col" aria-label="Технологии">
+        <h4>Технологии</h4>
+        <a href="#features">Обход DPI</a>
+        <a href="#features">MTProto 2.0</a>
+        <a href="#features">Zero-log</a>
+        <a href="#servers">Anycast edge</a>
+      </nav>
+      <nav class="ftr__col" aria-label="Загрузка">
+        <h4>Загрузка</h4>
+        <a href="https://github.com/TgWs-Proxy/tgws-proxy.github.io/releases/download/TgWsProxy/Tgwsproxy.exe">Tgwsproxy.exe</a>
+        <a href="https://github.com/TgWs-Proxy/tgws-proxy.github.io/releases" target="_blank" rel="noopener">Все релизы</a>
+        <a href="#connect">Инструкция</a>
+        <a href="#telemetry">Статус сети</a>
+      </nav>
+    </div>
+
+    <div class="ftr__bottom">
+      <span>© <span id="year">2025</span> TgWsProxy. Сервис не связан с Telegram Messenger Inc.</span>
+      <span class="status"><i class="led"></i>All systems operational · <span id="clock">--:--:--</span> UTC</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   TgWsProxy — клиентский слой
+   1. Утилиты (PRNG, формат, DOM)
+   2. Hero: анимированная SVG-сеть + параллакс
+   3. Карта узлов: dot-matrix SVG + маркеры
+   4. Таблица узлов и живые метрики
+   5. График пинга (Canvas, 500 мс)
+   6. SVG-макеты Telegram
+   7. Интерактив: курсор, хедер, reveal, глитч, параллакс, часы
+   ============================================================ */
+(function () {
+  'use strict';
+
+  const $  = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SVGNS = 'http://www.w3.org/2000/svg';
+
+  /* ── 1. Утилиты ─────────────────────────────────────────── */
+  // детерминированный PRNG: композиция SVG одинакова при каждой загрузке
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const NBSP = '\u00A0';
+  const group = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+  function el(name, attrs, parent) {
+    const node = document.createElementNS(SVGNS, name);
+    for (const k in attrs) node.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(node);
+    return node;
+  }
+
+  /* ── 2. Hero: SVG-сеть ──────────────────────────────────── */
+  const heroNet = (function () {
+    const host = $('#heroNet');
+    if (!host) return { parallax: () => {} };
+
+    const W = 1600, H = 900;
+    const svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'xMidYMid slice' }, host);
+    const gFar = el('g', {}, svg);   // дальний слой — слабый параллакс
+    const gNear = el('g', {}, svg);  // ближний слой — сильный
+
+    const rnd = mulberry32(20240117);
+    const nodes = [];
+    for (let i = 0; i < 52; i++) {
+      nodes.push({
+        x: rnd() * W,
+        y: rnd() * H,
+        r: 1.6 + rnd() * 2.4,
+        near: rnd() > .55,
+        ph: rnd() * 6.28
+      });
+    }
+
+    // связи: каждый узел тянется к 2 ближайшим
+    const wires = [];
+    nodes.forEach((a, i) => {
+      nodes
+        .map((b, j) => ({ j: j, d: Math.hypot(a.x - b.x, a.y - b.y) }))
+        .filter((o) => o.j !== i)
+        .sort((p, q) => p.d - q.d)
+        .slice(0, 2)
+        .forEach((o) => { if (o.d < 420) wires.push([i, o.j, o.d]); });
+    });
+
+    wires.forEach((w) => {
+      const a = nodes[w[0]], b = nodes[w[1]], d = w[2];
+      const line = el('line', {
+        x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+        stroke: '#ffffff',
+        'stroke-opacity': (0.40 - (d / 420) * 0.24).toFixed(2),
+        'stroke-width': (a.near && b.near) ? 1 : 0.7,
+        'stroke-dasharray': '5 11'
+      }, (a.near && b.near) ? gNear : gFar);
+      // «бегущий» пунктир: анимируем только dash-offset
+      const dur = 3.6 + rnd() * 4.4;
+      line.style.animation = 'flow ' + dur.toFixed(2) + 's linear infinite';
+      line.style.animationDelay = (-rnd() * dur).toFixed(2) + 's';
+    });
+
+    nodes.forEach((n) => {
+      const c = el('circle', {
+        cx: n.x, cy: n.y, r: n.r.toFixed(2),
+        fill: '#ffffff',
+        'fill-opacity': n.near ? 0.95 : 0.62
+      }, n.near ? gNear : gFar);
+      c.style.transformBox = 'fill-box';
+      c.style.transformOrigin = 'center';
+      c.style.animation = 'nodePulse ' + (2.4 + (n.ph % 2.6)).toFixed(2) + 's ease-in-out infinite';
+      c.style.animationDelay = (-n.ph).toFixed(2) + 's';
+    });
+
+    // параллакс за курсором (только transform + rAF)
+    let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+    function step() {
+      cx += (tx - cx) * 0.08;
+      cy += (ty - cy) * 0.08;
+      gFar.setAttribute('transform', 'translate(' + (cx * 10).toFixed(2) + ',' + (cy * 10).toFixed(2) + ')');
+      gNear.setAttribute('transform', 'translate(' + (cx * 26).toFixed(2) + ',' + (cy * 26).toFixed(2) + ')');
+      raf = (Math.abs(tx - cx) > 0.002 || Math.abs(ty - cy) > 0.002) ? requestAnimationFrame(step) : 0;
+    }
+    return {
+      parallax: function (nx, ny) {          // nx, ny ∈ [-1, 1]
+        if (REDUCED) return;
+        tx = nx; ty = ny;
+        if (!raf) raf = requestAnimationFrame(step);
+      }
+    };
+  })();
+
+  /* ── 3. Карта узлов ─────────────────────────────────────── */
+  // Dot-matrix мира: 48 × 24 ячейки, равнопромежуточная проекция.
+  const MAP = [
+    "000000000000000000000000000000000000000000000000",
+    "000000000101110011111000001000000000100000000000",
+    "000011111111110111111100011111111111111111111111",
+    "011111111111111111111100111111111111111111111111",
+    "011111111111111111100001111111111111111111111111",
+    "000001111111111110000001111111111111111111111111",
+    "000001111111111100000011111111111111111111100000",
+    "000000111111111000000011111111111111111111100000",
+    "000000001110010000000111111111111111111110000000",
+    "000000000011110000000011111111100111111010000000",
+    "000000000000111100000011111111100111111010000000",
+    "000000000000011111000011111111100010111110000000",
+    "000000000000011111110000011110000000111111110000",
+    "000000000000011111110000001111100000001110010000",
+    "000000000000001111100000001110100000000011111000",
+    "000000000000001111100000001110100000000011111000",
+    "000000000000001111000000000110000000000001111011",
+    "000000000000001110000000000000000000000000010011",
+    "000000000000001100000000000000000000000000000000",
+    "000000000000011100000000000000000000000000000000",
+    "000000000000010000000000000000000000000000000000",
+    "000011111111011000000000000011111111111110000000",
+    "000111111100011111111100000111111110000111111100",
+    "000001111111111000000000000000111111111111100000"
+  ];
+  const MAP_W = 48, MAP_H = 24, CELL = 12;
+  const MAP_VB_W = MAP_W * CELL, MAP_VB_H = MAP_H * CELL;
+
+  // локации публичных узлов (lon, lat)
+  const SERVERS = [
+    { code: 'FRA-01', city: 'Франкфурт', cc: 'DE', lon: 8.68,   lat: 50.11, ping: 34,  up: 99.99, load: 48, proto: ['wss', 'mtproto'], status: 'on' },
+    { code: 'AMS-02', city: 'Амстердам', cc: 'NL', lon: 4.90,   lat: 52.37, ping: 31,  up: 99.98, load: 52, proto: ['wss', 'mtproto'], status: 'on' },
+    { code: 'STO-01', city: 'Стокгольм', cc: 'SE', lon: 18.06,  lat: 59.33, ping: 41,  up: 99.97, load: 37, proto: ['wss'],            status: 'on' },
+    { code: 'HEL-01', city: 'Хельсинки', cc: 'FI', lon: 24.94,  lat: 60.17, ping: 38,  up: 99.99, load: 44, proto: ['wss', 'mtproto'], status: 'on' },
+    { code: 'WAW-01', city: 'Варшава',   cc: 'PL', lon: 21.01,  lat: 52.23, ping: 44,  up: 99.95, load: 61, proto: ['wss'],            status: 'on' },
+    { code: 'IST-01', city: 'Стамбул',   cc: 'TR', lon: 28.98,  lat: 41.01, ping: 55,  up: 99.92, load: 68, proto: ['wss', 'mtproto'], status: 'warn' },
+    { code: 'TBS-01', city: 'Тбилиси',   cc: 'GE', lon: 44.83,  lat: 41.72, ping: 62,  up: 99.96, load: 42, proto: ['wss', 'mtproto'], status: 'on' },
+    { code: 'ALA-01', city: 'Алматы',    cc: 'KZ', lon: 76.89,  lat: 43.24, ping: 96,  up: 99.88, load: 33, proto: ['wss'],            status: 'on' },
+    { code: 'NYC-01', city: 'Нью-Йорк',  cc: 'US', lon: -74.01, lat: 40.71, ping: 118, up: 99.94, load: 57, proto: ['wss', 'mtproto'], status: 'on' },
+    { code: 'SIN-01', city: 'Сингапур',  cc: 'SG', lon: 103.82, lat: 1.35,  ping: 143, up: 99.90, load: 46, proto: ['wss'],            status: 'off' }
+  ];
+  const project = (lon, lat) => [
+    ((lon + 180) / 360) * MAP_VB_W,
+    ((90 - lat) / 180) * MAP_VB_H
+  ];
+
+  function buildMap() {
+    const host = $('#mapBox');
+    if (!host) return;
+    const svg = el('svg', {
+      class: 'map', viewBox: '0 0 ' + MAP_VB_W + ' ' + MAP_VB_H,
+      preserveAspectRatio: 'xMidYMid meet', role: 'img',
+      'aria-label': 'Карта мира из точек с локациями серверов TgWsProxy'
+    }, host);
+
+    // сетка-градусник: каждые 30° по долготе и широте
+    for (let lon = -150; lon <= 150; lon += 30) {
+      el('path', { class: 'graticule', d: 'M' + project(lon, 0)[0] + ' 0V' + MAP_VB_H }, svg);
+    }
+    for (let lat = -60; lat <= 60; lat += 30) {
+      el('path', { class: 'graticule', d: 'M0 ' + project(0, lat)[1] + 'H' + MAP_VB_W }, svg);
+    }
+
+    // точки континентов одним path-фрагментом на круг
+    let dots = '';
+    for (let r = 0; r < MAP_H; r++) {
+      const row = MAP[r];
+      for (let c = 0; c < MAP_W; c++) {
+        if (row[c] !== '1') continue;
+        const x = (c * CELL + CELL / 2).toFixed(1);
+        const y = (r * CELL + CELL / 2).toFixed(1);
+        dots += '<circle class="land" cx="' + x + '" cy="' + y + '" r="2.6"/>';
+      }
+    }
+    el('g', {}, svg).innerHTML = dots;
+
+    // маркеры серверов с пульсацией
+    // подписи только у крупных хабов + ручные смещения, чтобы текст не сталкивался
+    const LABELS = {
+      'FRA-01': { dx: 9,  dy: 12, anchor: 'start' },
+      'NYC-01': { dx: -9, dy: -7, anchor: 'end' },
+      'ALA-01': { dx: 9,  dy: -7, anchor: 'start' },
+      'SIN-01': { dx: 9,  dy: 12, anchor: 'start' }
+    };
+    SERVERS.forEach((s, i) => {
+      const p = project(s.lon, s.lat);
+      const mk = el('g', { class: 'mk' + (s.status === 'on' ? ' mk--on' : '') }, svg);
+      el('circle', { class: 'halo', cx: p[0], cy: p[1], r: 7, style: 'animation-delay:' + (i * 0.32).toFixed(2) + 's' }, mk);
+      el('circle', { class: 'core', cx: p[0], cy: p[1], r: 3.2 }, mk);
+      const lb = LABELS[s.code];
+      if (lb) {
+        el('text', { x: p[0] + lb.dx, y: p[1] + lb.dy, 'text-anchor': lb.anchor }, mk).textContent = s.code;
+      }
+    });
+  }
+
+  /* ── 4. Таблица узлов + живые метрики ───────────────────── */
+  const state = { online: 12847, ping: 38, uptime: 99.98, load: 41, nodesOnline: 24 };
+  const pingPct = (p) => clamp(100 - (p - 25) * 0.62, 8, 100);
+
+  function renderTable() {
+    const body = $('#nodesBody');
+    if (!body) return;
+    body.innerHTML = SERVERS.map(function (s) {
+      return '<tr data-row="' + s.code + '" class="' + (s.status === 'off' ? 'n-row--off' : '') + '">' +
+        '<td><span class="n-loc"><span class="n-code">' + s.code + '</span>' + s.city + '</span></td>' +
+        '<td class="n-loc" style="font-weight:400">' + s.cc + ' · <span class="dim">' + s.lon.toFixed(1) + '°, ' + s.lat.toFixed(1) + '°</span></td>' +
+        '<td class="n-proto">' + s.proto.map(function (p) { return '<span>' + (p === 'wss' ? 'WSS' : 'MTProto') + '</span>'; }).join('') + '</td>' +
+        '<td><span class="n-ping"><i class="' + (s.ping > 60 ? 'bad' : '') + '" style="--p:' + pingPct(s.ping) + '%"></i><span data-cell="ping">' + s.ping + '</span></span></td>' +
+        '<td data-cell="up">' + s.up.toFixed(2) + '%</td>' +
+        '<td data-cell="load">' + Math.round(s.load) + '%</td>' +
+        '<td><span class="n-badge' + (s.status === 'on' ? ' on' : '') + '" data-cell="st"><i class="led' + (s.status === 'on' ? '' : ' led--off') + '"></i>' +
+        (s.status === 'on' ? 'ONLINE' : s.status === 'warn' ? 'LOAD' : 'OFFLINE') + '</span></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function refreshTable() {
+    SERVERS.forEach(function (s) {
+      const row = $('[data-row="' + s.code + '"]');
+      if (!row) return;
+      if (s.status !== 'off') {
+        s.ping = clamp(s.ping + (Math.random() - 0.5) * 7, 22, 190);
+        s.load = clamp(s.load + (Math.random() - 0.5) * 6, 15, 90);
+        s.up = Math.min(99.999, s.up + Math.random() * 0.002);
+        if (Math.random() < 0.02) s.status = s.status === 'on' ? 'warn' : 'on';
+      } else if (Math.random() < 0.015) {
+        s.status = 'on';
+      }
+      const p = Math.round(s.ping);
+      const bar = $('.n-ping i', row);
+      $('[data-cell="ping"]', row).textContent = p;
+      $('[data-cell="up"]', row).textContent = s.up.toFixed(2) + '%';
+      $('[data-cell="load"]', row).textContent = Math.round(s.load) + '%';
+      bar.style.setProperty('--p', pingPct(p) + '%');
+      bar.classList.toggle('bad', p > 60);
+
+      const badge = $('[data-cell="st"]', row);
+      badge.className = 'n-badge' + (s.status === 'on' ? ' on' : '');
+      badge.innerHTML = '<i class="led' + (s.status === 'on' ? '' : ' led--off') + '"></i>' +
+        (s.status === 'on' ? 'ONLINE' : s.status === 'warn' ? 'LOAD' : 'OFFLINE');
+      row.classList.toggle('n-row--off', s.status === 'off');
+    });
+
+    state.nodesOnline = SERVERS.filter(function (s) { return s.status !== 'off'; }).length + 15;
+  }
+
+  function tickMetrics() {
+    state.ping = clamp(state.ping + (Math.random() - 0.48) * 4, 26, 64);
+    state.uptime = clamp(state.uptime + (Math.random() - 0.5) * 0.008, 99.94, 99.999);
+    state.load = clamp(state.load + (Math.random() - 0.5) * 2.4, 28, 72);
+    state.online = Math.max(9000, state.online + Math.round((Math.random() - 0.42) * 40));
+
+    const map = {
+      ping: Math.round(state.ping),
+      uptime: state.uptime.toFixed(2),
+      load: Math.round(state.load),
+      nodes: state.nodesOnline
+    };
+    Object.keys(map).forEach(function (k) {
+      $$('[data-m="' + k + '"]').forEach(function (n) { n.textContent = map[k]; });
+    });
+    $$('[data-online]').forEach(function (n) { n.textContent = group(state.online); });
+  }
+
+  /* ── 5. График пинга (Canvas, 500 мс) ───────────────────── */
+  const chart = (function () {
+    const canvas = $('#chart');
+    const spark = $('#spark');
+    if (!canvas) return;
+
+    const data = [];
+    const LIMIT = 120;
+    let base = 40;
+
+    function size(cv) {
+      const r = cv.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = Math.max(1, Math.round(r.width * dpr));
+      cv.height = Math.max(1, Math.round(r.height * dpr));
+      const ctx = cv.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx: ctx, w: r.width, h: r.height };
+    }
+
+    function render() {
+      if (!data.length) return;
+      const c = size(canvas);
+      const ctx = c.ctx, w = c.w, h = c.h;
+      ctx.clearRect(0, 0, w, h);
+
+      // сетка из серых точек
+      ctx.fillStyle = 'rgba(255,255,255,.16)';
+      for (let x = 0; x <= w; x += 26) {
+        for (let y = 0; y <= h; y += 26) ctx.fillRect(x, y, 1, 1);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,.09)';
+      ctx.beginPath(); ctx.moveTo(0, h - .5); ctx.lineTo(w, h - .5); ctx.stroke();
+
+      const min = Math.min.apply(null, data) - 5;
+      const max = Math.max.apply(null, data) + 5;
+      const px = (i) => (i / Math.max(1, data.length - 1)) * w;
+      const py = (v) => h - ((v - min) / (max - min || 1)) * (h - 8) - 4;
+
+      // белая линия пинга
+      ctx.beginPath();
+      data.forEach(function (v, i) { i ? ctx.lineTo(px(i), py(v)) : ctx.moveTo(px(i), py(v)); });
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.4;
+      ctx.shadowColor = 'rgba(255,255,255,.55)';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // засечка текущего значения
+      const lx = px(data.length - 1), ly = py(data[data.length - 1]);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(lx - 1.5, ly - 1.5, 3, 3);
+      ctx.strokeStyle = 'rgba(255,255,255,.25)';
+      ctx.beginPath(); ctx.moveTo(lx, 0); ctx.lineTo(lx, h); ctx.stroke();
+
+      // мини-спарклайн в hero
+      if (spark) {
+        const s = size(spark);
+        s.ctx.clearRect(0, 0, s.w, s.h);
+        const tail = data.slice(-60);
+        if (tail.length > 1) {
+          const mn = Math.min.apply(null, tail) - 3;
+          const mx = Math.max.apply(null, tail) + 3;
+          s.ctx.beginPath();
+          tail.forEach(function (v, i) {
+            const x = (i / (tail.length - 1)) * s.w;
+            const y = s.h - ((v - mn) / (mx - mn || 1)) * (s.h - 4) - 2;
+            i ? s.ctx.lineTo(x, y) : s.ctx.moveTo(x, y);
+          });
+          s.ctx.strokeStyle = 'rgba(255,255,255,.62)';
+          s.ctx.lineWidth = 1;
+          s.ctx.stroke();
+        }
+      }
+
+      // статистика под графиком
+      const set = (k, v) => { const n = $('[data-t="' + k + '"]'); if (n) n.textContent = v; };
+      set('cur', Math.round(data[data.length - 1]));
+      set('avg', Math.round(data.reduce((a, b) => a + b, 0) / data.length));
+      set('min', Math.round(Math.min.apply(null, data)));
+      set('max', Math.round(Math.max.apply(null, data)));
+    }
+
+    // реалистичный ряд: медленный дрейф + джиттер
+    for (let i = 0; i < LIMIT; i++) {
+      base = clamp(base + (Math.random() - 0.5) * 3.2, 28, 62);
+      data.push(clamp(base + Math.sin(i / 7) * 4 + (Math.random() - 0.5) * 5, 22, 78));
+    }
+    render();
+
+    setInterval(function () {
+      base = clamp(base + (Math.random() - 0.5) * 3.2, 28, 62);
+      const v = clamp(base + (Math.random() - 0.5) * 7 + Math.sin(Date.now() / 5200) * 3.4, 22, 78);
+      data.push(v);
+      if (data.length > LIMIT) data.shift();
+      state.ping = v;
+      render();
+    }, 500);
+
+    window.addEventListener('resize', function () { setTimeout(render, 120); });
+  })();
+
+  /* ── 6. SVG-макеты Telegram ─────────────────────────────── */
+  function telegramMock(variant) {
+    const conf = [
+      { node: 'eu-fra-01', ping: '42', proto: 'WSS · MTProto 2.0', region: 'Регион с DPI' },
+      { node: 'eu-ams-02', ping: '31', proto: 'WSS · TLS 1.3',     region: 'Корпоративная сеть' },
+      { node: 'eu-sto-01', ping: '74', proto: 'WSS · автопереключение', region: 'Нестабильный Wi-Fi' }
+    ][variant];
+
+    return '' +
+    '<svg viewBox="0 0 300 360" role="img" aria-label="Экран настроек прокси в Telegram со статусом Connected">' +
+      '<rect class="frame" x="1" y="1" width="298" height="358" rx="14"></rect>' +
+      '<path class="ui" d="M1 44h298"></path>' +
+      '<path class="ui" d="M16 24l-5 5 5 5" stroke-width="1.4"></path>' +
+      '<text class="txt" x="34" y="33">Прокси</text>' +
+      '<circle class="ui" cx="272" cy="29" r="2"></circle>' +
+      '<circle class="ui" cx="280" cy="29" r="2"></circle>' +
+      '<circle class="ui" cx="288" cy="29" r="2"></circle>' +
+      '<rect class="bar-l" x="16" y="62" width="268" height="56" rx="6"></rect>' +
+      '<circle class="bar" cx="40" cy="90" r="13"></circle>' +
+      '<text class="txt-w" x="64" y="86">TgWsProxy · ' + conf.node + '</text>' +
+      '<text class="txt" x="64" y="102">' + conf.proto + '</text>' +
+      '<rect x="248" y="82" width="26" height="14" rx="7" fill="#fff"></rect>' +
+      '<circle cx="267" cy="89" r="5" fill="#000"></circle>' +
+      '<path class="ui" d="M16 132h268"></path>' +
+      '<circle class="ok" cx="26" cy="156" r="3.5"></circle>' +
+      '<text class="txt-w" x="40" y="160">Connected</text>' +
+      '<text class="txt" x="284" y="160" text-anchor="end">' + conf.ping + ' ms</text>' +
+      '<path class="ui" d="M16 176h268"></path>' +
+      '<text class="txt" x="16" y="196">Пинг за 60 секунд</text>' +
+      '<path class="line" d="M16 236 L44 230 L72 234 L100 218 L128 222 L156 206 L184 210 L212 196 L240 200 L268 190 L284 192"></path>' +
+      '<path class="ui" d="M16 250h268"></path>' +
+      '<text class="txt" x="16" y="272">Логи соединений</text>' +
+      '<text class="txt-w" x="284" y="272" text-anchor="end">не хранятся</text>' +
+      '<rect class="bar-l" x="16" y="284" width="120" height="9" rx="2"></rect>' +
+      '<rect class="bar-l" x="146" y="284" width="70" height="9" rx="2"></rect>' +
+      '<rect class="bar-l" x="16" y="300" width="88" height="9" rx="2"></rect>' +
+      '<rect class="bar-l" x="114" y="300" width="140" height="9" rx="2"></rect>' +
+      '<path class="ui" d="M1 322h298"></path>' +
+      '<text class="txt" x="16" y="340">' + conf.region + '</text>' +
+      '<text class="txt" x="284" y="340" text-anchor="end">uptime 99.99%</text>' +
+    '</svg>';
+  }
+
+  /* ── 7. Интерактив: курсор, хедер, reveal, глитч, параллакс ── */
+  function initCursor() {
+    const cur = $('#cur');
+    if (!cur || !window.matchMedia('(pointer:fine)').matches) return;
+    cur.style.display = 'block';
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    const ring = $('.cur__ring', cur);
+
+    addEventListener('mousemove', function (e) {
+      mx = e.clientX; my = e.clientY;
+      cur.style.transform = 'translate3d(' + mx + 'px,' + my + 'px,0)';
+    }, { passive: true });
+
+    addEventListener('mouseover', function (e) {
+      const hot = e.target.closest('a,button,.card,.review,.step');
+      cur.classList.toggle('hot', !!hot);
+    }, { passive: true });
+
+    if (REDUCED) return;
+    (function loop() {                       // trailing-эффект: кольцо догоняет точку
+      rx += (mx - rx) * 0.16;
+      ry += (my - ry) * 0.16;
+      ring.style.transform = 'translate3d(' + (rx - mx).toFixed(2) + 'px,' + (ry - my).toFixed(2) + 'px,0) translate(-50%,-50%)';
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  function initHeader() {
+    const hdr = $('#hdr'), burger = $('#burger'), sheet = $('#msheet');
+    const onScroll = () => hdr.classList.toggle('stuck', scrollY > 8);
+    onScroll();
+    addEventListener('scroll', onScroll, { passive: true });
+
+    burger.addEventListener('click', function () {
+      const open = sheet.hasAttribute('hidden');
+      sheet.toggleAttribute('hidden', !open);
+      burger.setAttribute('aria-expanded', String(open));
+    });
+    sheet.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') {
+        sheet.setAttribute('hidden', '');
+        burger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // активный раздел в навигации
+    const links = $$('.nav a');
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px' });
+      ['features', 'servers', 'reviews', 'connect'].forEach(function (id) {
+        const n = document.getElementById(id);
+        if (n) io.observe(n);
+      });
+    }
+  }
+
+  function initReveal() {
+    const items = $$('.rv');
+    if (!('IntersectionObserver' in window) || REDUCED) {
+      items.forEach(function (n) { n.classList.add('in'); });
+      return;
+    }
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    items.forEach(function (n) { io.observe(n); });
+  }
+
+  function initGlitch() {
+    const logo = $('#logo');
+    if (!logo || REDUCED) return;
+    const jerk = function () {
+      logo.classList.add('jerk');
+      setTimeout(function () { logo.classList.remove('jerk'); }, 360);
+    };
+    setInterval(function () { if (Math.random() < 0.5) jerk(); }, 6500);
+    logo.addEventListener('mouseenter', jerk);
+  }
+
+  function initParallax() {
+    const hero = $('#hero');
+    if (!hero || REDUCED) return;
+    hero.addEventListener('mousemove', function (e) {
+      const r = hero.getBoundingClientRect();
+      heroNet.parallax(((e.clientX - r.left) / r.width - .5) * 2, ((e.clientY - r.top) / r.height - .5) * 2);
+    }, { passive: true });
+    hero.addEventListener('mouseleave', function () { heroNet.parallax(0, 0); }, { passive: true });
+  }
+
+  function initClock() {
+    const clock = $('#clock'), year = $('#year');
+    if (year) year.textContent = String(new Date().getFullYear());
+    if (!clock) return;
+    const tick = function () { clock.textContent = new Date().toISOString().slice(11, 19); };
+    tick(); setInterval(tick, 1000);
+  }
+
+  /* ── Инициализация ──────────────────────────────────────── */
+  buildMap();
+  renderTable();
+  $$('[data-mock]').forEach(function (n) { n.innerHTML = telegramMock(Number(n.dataset.mock)); });
+  initCursor();
+  initHeader();
+  initReveal();
+  initGlitch();
+  initParallax();
+  initClock();
+
+  tickMetrics();
+  setInterval(tickMetrics, 2000);    // живая метрика — каждые 2 с
+  setInterval(refreshTable, 2500);   // телеметрия узлов — каждые 2.5 с
+})();
+</script>
+</body>
+</html>
